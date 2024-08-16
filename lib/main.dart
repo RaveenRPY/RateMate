@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_sizer/flutter_sizer.dart';
 import 'package:ratemate/features/presentation/bloc/rates/rates_bloc.dart';
 import 'package:ratemate/features/presentation/views/splash_view.dart';
 
@@ -12,21 +13,23 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<RatesBloc>(create: (context) => RatesBloc()),
-      ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-                seedColor: const Color(0xff181818),
-                brightness: Brightness.dark),
-            useMaterial3: true,
-            primaryColor: const Color(0xff181818)),
-        home: const SplashView(),
-      ),
-    );
+    return FlutterSizer(builder: (context, orientation, deviceType) {
+      return MultiBlocProvider(
+        providers: [
+          BlocProvider<RatesBloc>(create: (context) => RatesBloc()),
+        ],
+        child: MaterialApp(
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                  seedColor: const Color(0xff181818),
+                  brightness: Brightness.dark),
+              useMaterial3: true,
+              primaryColor: const Color(0xff181818)),
+          home: const SplashView(),
+        ),
+      );
+    });
   }
 }
 

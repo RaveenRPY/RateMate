@@ -11,6 +11,9 @@ class AppStyling {
   static TextStyle medium16White() {
     return GoogleFonts.poppins(fontWeight: FontWeight.w500, fontSize: 16, color: Colors.white);
   }
+  static TextStyle bold16White() {
+    return GoogleFonts.poppins(fontWeight: FontWeight.w700, fontSize: 16, color: Colors.white);
+  }
   static TextStyle bold20White() {
     return GoogleFonts.orbit(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white);
   }

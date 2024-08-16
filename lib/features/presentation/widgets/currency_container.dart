@@ -1,10 +1,15 @@
+import 'dart:developer';
+
 import 'package:country_flags/country_flags.dart';
 import 'package:currency_picker/currency_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ratemate/utils/app_constants.dart';
 import 'package:ratemate/utils/app_styles.dart';
 import 'package:ratemate/utils/app_utils.dart';
+
+import '../bloc/rates/rates_bloc.dart';
 
 class CurrencyContainer extends StatefulWidget {
   bool? isBaseCurrency;
@@ -62,103 +67,139 @@ class _CurrencyContainerState extends State<CurrencyContainer> {
 
   @override
   Widget build(BuildContext context) {
-    return TextFormField(
-      controller: widget.isBaseCurrency! ? controller : null,
-      cursorColor: Colors.green,
-      keyboardType: TextInputType.number,
-      style: AppStyling.bold20White(),
-      onChanged: (amount) {
-        _onControllerChanged();
+    return BlocListener<RatesBloc, RatesState>(
+      listener: (context, state) {
+        if (state is GetRatesSuccessState) {
+          setState(() {
+            rateFactor = AppConstants.ratesMap[currencyCode]!;
+          });
+        }
       },
-      onTapOutside: (PointerDownEvent p){FocusScope.of(context).unfocus();},
-      decoration: InputDecoration(
-        enabled: widget.isBaseCurrency ?? false,
-        contentPadding: const EdgeInsets.fromLTRB(20, 20, 10, 20),
-        filled: true,
-        hintStyle: AppStyling.bold20White(),
-        fillColor: const Color(0xff262425),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
-        hintText: widget.initialValue == '' || widget.initialValue == null
-            ? '0.0'
-            : ((double.parse(widget.initialValue!) * rateFactor).toStringAsFixed(2)).toString(),
-        enabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.transparent),
-            borderRadius: BorderRadius.circular(15)),
-        disabledBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.transparent),
-            borderRadius: BorderRadius.circular(15)),
-        focusedBorder: OutlineInputBorder(
-            borderSide: const BorderSide(color: Colors.green, width: 1.5),
-            borderRadius: BorderRadius.circular(15)),
-        suffixIcon: Padding(
-          padding: const EdgeInsets.only(right: 10),
-          child: Material(
-            color: Colors.transparent,
-            child: InkWell(
-              highlightColor: Colors.transparent,
-              borderRadius: BorderRadius.circular(15),
-              child: Padding(
-                padding: const EdgeInsets.all(3.0),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    CountryFlag.fromCountryCode(
-                      countryCode ?? 'LK',
-                      height: 18,
-                      width: 18,
-                      shape: const Circle(),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      currencyCode!,
-                      style: AppStyling.medium14White(),
-                    ),
-                    const SizedBox(width: 2),
-                    const Icon(
-                      Icons.keyboard_arrow_down_rounded,
-                      size: 18,
-                      color: Colors.grey,
-                    ),
-                  ],
-                ),
+      child: Stack(
+        children: [
+          TextFormField(
+            controller: widget.isBaseCurrency! ? controller : null,
+            cursorColor: Colors.green,
+            keyboardType: TextInputType.number,
+            style: AppStyling.bold20White(),
+            onChanged: (amount) {
+              _onControllerChanged();
+            },
+            onTapOutside: (PointerDownEvent p) {
+              FocusScope.of(context).unfocus();
+            },
+            enabled: widget.isBaseCurrency!,
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.fromLTRB(25, 0, 10, 30),
+              filled: true,
+              hintStyle: AppStyling.bold20White(),
+              fillColor: const Color(0xff262425),
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
+              hintText: widget.initialValue == '' || widget.initialValue == null
+                  ? '0.0'
+                  : ((double.parse(widget.initialValue!) * rateFactor)
+                          .toStringAsFixed(2))
+                      .toString(),
+              enabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.transparent),
+                  borderRadius: BorderRadius.circular(15)),
+              disabledBorder: OutlineInputBorder(
+                  borderSide: const BorderSide(color: Colors.transparent),
+                  borderRadius: BorderRadius.circular(15)),
+              focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(
+                      color: widget.isBaseCurrency!
+                          ? Colors.green
+                          : Colors.transparent,
+                      width: 1.5),
+                  borderRadius: BorderRadius.circular(15)),
+              suffixIcon: const Padding(
+                padding: EdgeInsets.only(right: 5),
+                child: SizedBox(width: 100),
               ),
-              onTap: () {
-                showCurrencyPicker(
-                  context: context,
-                  showFlag: true,
-                  showSearchField: true,
-                  showCurrencyName: true,
-                  favorite: ['lkr'],
-                  onSelect: (Currency currency) {
-                    setState(() {
-                      currencyCode = currency.code;
-                      countryCode =
-                          AppUtils.currency2CountryCode(currencyCode!);
-                    });
-                  },
-                  currencyFilter: AppConstants.currencyList,
-                  theme: CurrencyPickerThemeData(
-                    flagSize: 25,
-                    titleTextStyle: AppStyling.medium16White(),
-                    subtitleTextStyle: AppStyling.thin14Grey().copyWith(color: Theme.of(context).hintColor),
-                    bottomSheetHeight: MediaQuery.of(context).size.height * 0.8,
-                    inputDecoration: InputDecoration(
-                      labelText: 'Search',
-                      prefixIcon: const Icon(Icons.search),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(15),
-                        borderSide: BorderSide(
-                          color: const Color(0xFF8C98A8).withOpacity(0.1),
+            ),
+          ),
+          Positioned(
+            right: 5,
+            top: 10,
+            child: Material(
+              color: Colors.transparent,
+              child: InkWell(
+                highlightColor: Colors.transparent,
+                borderRadius: BorderRadius.circular(20),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 10),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CountryFlag.fromCountryCode(
+                        countryCode ?? 'LK',
+                        height: 18,
+                        width: 18,
+                        shape: const Circle(),
+                      ),
+                      const SizedBox(width: 10),
+                      Text(
+                        currencyCode!,
+                        style: AppStyling.medium14White(),
+                      ),
+                      const SizedBox(width: 2),
+                      const Icon(
+                        Icons.keyboard_arrow_down_rounded,
+                        size: 18,
+                        color: Colors.grey,
+                      ),
+                    ],
+                  ),
+                ),
+                onTap: () {
+                  showCurrencyPicker(
+                    context: context,
+                    showFlag: true,
+                    showSearchField: true,
+                    showCurrencyName: true,
+                    favorite: ['lkr'],
+                    onSelect: (Currency currency) {
+                      setState(() {
+                        currencyCode = currency.code;
+                        countryCode =
+                            AppUtils.currency2CountryCode(currencyCode!);
+
+                        if (widget.isBaseCurrency!) {
+                          BlocProvider.of<RatesBloc>(context)
+                              .add(RatesRequestEvent(baseCode: currencyCode));
+                        } else {
+                          rateFactor = AppConstants.ratesMap[currencyCode]!;
+                        }
+                      });
+                    },
+                    currencyFilter: AppConstants.currencyList,
+                    theme: CurrencyPickerThemeData(
+                      flagSize: 25,
+                      titleTextStyle: AppStyling.medium16White(),
+                      subtitleTextStyle: AppStyling.thin14Grey()
+                          .copyWith(color: Theme.of(context).hintColor),
+                      bottomSheetHeight:
+                          MediaQuery.of(context).size.height * 0.8,
+                      inputDecoration: InputDecoration(
+                        labelText: 'Search',
+                        prefixIcon: const Icon(Icons.search),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide(
+                            color: const Color(0xFF8C98A8).withOpacity(0.1),
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                );
-              },
+                  );
+                },
+              ),
             ),
           ),
-        ),
+        ],
       ),
     );
   }

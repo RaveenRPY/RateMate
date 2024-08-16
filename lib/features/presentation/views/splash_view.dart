@@ -13,6 +13,7 @@ class SplashView extends StatefulWidget {
 
 class _SplashViewState extends State<SplashView> {
 
+
   @override
   void initState() {
     BlocProvider.of<RatesBloc>(context).add(RatesRequestEvent(baseCode: 'USD'));
@@ -30,7 +31,7 @@ class _SplashViewState extends State<SplashView> {
       listener: (context, state) {
         if(state is GetRatesSuccessState){
           Navigator.of(context).pushReplacement(MaterialPageRoute(
-            builder: (context) => ConversionView(),
+            builder: (context) => const ConversionView(),
           ));
         }
       },
