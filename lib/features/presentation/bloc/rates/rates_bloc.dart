@@ -1,7 +1,12 @@
+import 'dart:developer';
+
 import 'package:bloc/bloc.dart';
 import 'package:ratemate/features/data/datasources/remote_data_source.dart';
 import 'package:ratemate/features/domain/entities/rates_entity.dart';
 import 'package:ratemate/features/domain/usecases/get_rates.dart';
+import 'package:ratemate/utils/app_constants.dart';
+
+import '../../../data/repositories/repository_impl.dart';
 
 part 'rates_event.dart';
 
@@ -9,7 +14,6 @@ part 'rates_state.dart';
 
 class RatesBloc extends Bloc<RatesEvent, RatesState> {
   final GetRates? useCaseGetRates = GetRates();
-  RemoteDataSourceImpl remoteDataSourceImpl = RemoteDataSourceImpl();
 
   RatesBloc() : super(RatesInitial()) {
     on<RatesRequestEvent>(_handleRatesRequestEvent);
@@ -19,28 +23,25 @@ class RatesBloc extends Bloc<RatesEvent, RatesState> {
       RatesRequestEvent event, Emitter<RatesState> emit) async {
     emit(APILoadingState());
 
-    final result = await remoteDataSourceImpl.getRates(event.baseCode!);
+    final result = await useCaseGetRates!(event.baseCode!);
 
     emit(
-     GetRatesSuccessState(
-    ratesEntity: RatesEntity(
-    conversionRates: result.conversionRates,
-    baseCode: result.baseCode,
-    ),
-    )
-      // result.fold(
-      //   (l) {
-      //     return GetRatesFailedState();
-      //   },
-      //   (r) {
-      //     return GetRatesSuccessState(
-      //       ratesEntity: RatesEntity(
-      //         conversionRates: r.conversionRates,
-      //         baseCode: r.baseCode,
-      //       ),
-      //     );
-      //   },
-      // ),
+      result.fold(
+        (l) {
+          return GetRatesFailedState();
+        },
+        (r) {
+          AppConstants.currencyList = r.conversionRates!.keys.toList();
+          AppConstants.ratesMap = r.conversionRates!;
+
+          return GetRatesSuccessState(
+            ratesEntity: RatesEntity(
+              conversionRates: r.conversionRates,
+              baseCode: r.baseCode,
+            ),
+          );
+        },
+      ),
     );
   }
 }

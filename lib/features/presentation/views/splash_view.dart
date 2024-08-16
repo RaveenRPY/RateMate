@@ -15,15 +15,12 @@ class _SplashViewState extends State<SplashView> {
 
   @override
   void initState() {
-    BlocProvider.of<RatesBloc>(context).add(RatesRequestEvent(baseCode: 'LKR'));
+    BlocProvider.of<RatesBloc>(context).add(RatesRequestEvent(baseCode: 'USD'));
     super.initState();
   }
 
   @override
   void didChangeDependencies() async {
-    await Future.delayed(const Duration(seconds: 2), () {
-
-    });
     super.didChangeDependencies();
   }
 
