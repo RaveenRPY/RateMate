@@ -100,14 +100,14 @@ class _CurrencyContainerState extends State<CurrencyContainer> {
               _onControllerChanged();
             },
             onTapOutside: (PointerDownEvent p) {
-              FocusScope.of(context).unfocus();
+              FocusScope.of(context).nextFocus();
             },
             enabled: widget.isBaseCurrency!,
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.fromLTRB(25, 0, 10, 30),
               filled: true,
               hintStyle: AppStyling.bold20White(),
-              fillColor: const Color(0xff262425),
+              fillColor: const Color(0xff262425).withOpacity(0.6),
               border:
                   OutlineInputBorder(borderRadius: BorderRadius.circular(15)),
               hintText: widget.initialValue == '' || widget.initialValue == null

@@ -84,7 +84,7 @@ class _ConversionViewState extends State<ConversionView> {
                   ),
                   const SizedBox(height: 15),
                   SizedBox(
-                    height: 450,
+                    height: 420,
                     child: ListView.builder(
                       itemCount: AppConstants.converterList.length,
                       itemBuilder: (context, index) {
@@ -146,7 +146,7 @@ class _ConversionViewState extends State<ConversionView> {
                       },
                       style: const ButtonStyle(
                           padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
-                              vertical: 10, horizontal: 20)),
+                              vertical: 15, horizontal: 25)),
                           surfaceTintColor:
                               WidgetStatePropertyAll(Color(0xff69b336))),
                       child: Row(

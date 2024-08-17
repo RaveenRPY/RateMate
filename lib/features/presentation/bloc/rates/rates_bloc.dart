@@ -6,9 +6,6 @@ import 'package:ratemate/features/data/datasources/remote_data_source.dart';
 import 'package:ratemate/features/domain/entities/rates_entity.dart';
 import 'package:ratemate/features/domain/usecases/get_rates.dart';
 import 'package:ratemate/utils/app_constants.dart';
-
-import '../../../data/repositories/repository_impl.dart';
-
 part 'rates_event.dart';
 
 part 'rates_state.dart';

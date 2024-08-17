@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:ratemate/features/presentation/bloc/rates/rates_bloc.dart';
 import 'package:ratemate/features/presentation/views/conversion_view.dart';
+import 'package:ratemate/features/presentation/widgets/custom_dialog_box.dart';
 import 'package:ratemate/utils/app_constants.dart';
 
 class SplashView extends StatefulWidget {
@@ -37,6 +38,20 @@ class _SplashViewState extends State<SplashView> {
           setState(() {
             AppConstants.converterList = state.local ?? [];
           });
+        } else if (state is GetRatesFailedState){
+          CustomDialogBox.show(
+            context,
+            isTwoButton: false,
+            title: 'Oops..!',
+            message: 'Something went wrong',
+            image: 'assets/lottie/failedError.json',
+            positiveButtonText: 'Try again',
+            positiveButtonTap: () {
+              BlocProvider.of<RatesBloc>(context).add(RatesRequestEvent(baseCode: 'USD'));
+              Navigator.pop(context);
+            },
+          );
+
         }
       },
       child: Scaffold(
