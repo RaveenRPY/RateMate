@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:lottie/lottie.dart';
 import 'package:ratemate/features/presentation/bloc/rates/rates_bloc.dart';
 import 'package:ratemate/features/presentation/views/conversion_view.dart';
 import 'package:ratemate/features/presentation/widgets/custom_dialog_box.dart';
 import 'package:ratemate/utils/app_constants.dart';
+import 'package:ratemate/utils/app_styles.dart';
 
 class SplashView extends StatefulWidget {
   const SplashView({super.key});
@@ -38,7 +40,7 @@ class _SplashViewState extends State<SplashView> {
           setState(() {
             AppConstants.converterList = state.local ?? [];
           });
-        } else if (state is GetRatesFailedState){
+        } else if (state is GetRatesFailedState) {
           CustomDialogBox.show(
             context,
             isTwoButton: false,
@@ -47,18 +49,27 @@ class _SplashViewState extends State<SplashView> {
             image: 'assets/lottie/failedError.json',
             positiveButtonText: 'Try again',
             positiveButtonTap: () {
-              BlocProvider.of<RatesBloc>(context).add(RatesRequestEvent(baseCode: 'USD'));
+              BlocProvider.of<RatesBloc>(context)
+                  .add(RatesRequestEvent(baseCode: 'USD'));
               Navigator.pop(context);
             },
           );
-
         }
       },
       child: Scaffold(
         body: Center(
-          child: Text(
-            'RateMate',
-            style: GoogleFonts.poppins(fontSize: 30),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                  height: 160,
+                  child: Lottie.asset('assets/lottie/splash1.json')),
+              const SizedBox(height: 10),
+              Text(
+                'RateMate',
+                style: AppStyling.medium30White(),
+              ),
+            ],
           ),
         ),
       ),
