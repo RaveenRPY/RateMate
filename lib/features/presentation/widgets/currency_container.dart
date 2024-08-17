@@ -9,6 +9,7 @@ import 'package:ratemate/utils/app_constants.dart';
 import 'package:ratemate/utils/app_styles.dart';
 import 'package:ratemate/utils/app_utils.dart';
 
+import '../../data/datasources/local_data_source.dart';
 import '../bloc/rates/rates_bloc.dart';
 
 class CurrencyContainer extends StatefulWidget {
@@ -17,6 +18,7 @@ class CurrencyContainer extends StatefulWidget {
   TextEditingController? controller;
   String? initialValue;
   String? currencyCode;
+  final ValueChanged<String>? onCurrencyChanged;
   final ValueChanged<String>? onAmountChanged;
 
   CurrencyContainer({
@@ -26,6 +28,7 @@ class CurrencyContainer extends StatefulWidget {
     this.controller,
     this.initialValue,
     this.currencyCode,
+    this.onCurrencyChanged,
     this.onAmountChanged,
   });
 
@@ -39,15 +42,19 @@ class _CurrencyContainerState extends State<CurrencyContainer> {
   late TextEditingController controller;
   late double rateFactor;
 
+  final LocalDataSource localDataSource = LocalDataSource();
+
   @override
   void initState() {
     super.initState();
-    currencyCode = widget.currencyCode ?? 'LKR';
-    countryCode = AppUtils.currency2CountryCode(currencyCode!);
-    controller = widget.controller ?? TextEditingController();
-    controller.addListener(_onControllerChanged);
+    setState(() {
+      currencyCode = widget.currencyCode;
+      countryCode = AppUtils.currency2CountryCode(currencyCode!);
+      controller = widget.controller ?? TextEditingController();
+      controller.addListener(_onControllerChanged);
 
-    rateFactor = AppConstants.ratesMap[currencyCode]!;
+      rateFactor = AppConstants.ratesMap[currencyCode]!;
+    });
   }
 
   @override
@@ -60,8 +67,15 @@ class _CurrencyContainerState extends State<CurrencyContainer> {
   }
 
   void _onControllerChanged() {
+    if (widget.onCurrencyChanged != null) {
+      setState(() {
+        widget.onCurrencyChanged!(currencyCode!);
+      });
+    }
     if (widget.onAmountChanged != null) {
-      widget.onAmountChanged!(controller.text);
+      setState(() {
+        widget.onAmountChanged!(controller.text!);
+      });
     }
   }
 
@@ -135,7 +149,7 @@ class _CurrencyContainerState extends State<CurrencyContainer> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       CountryFlag.fromCountryCode(
-                        countryCode ?? 'LK',
+                        countryCode!,
                         height: 18,
                         width: 18,
                         shape: const Circle(),
@@ -173,6 +187,8 @@ class _CurrencyContainerState extends State<CurrencyContainer> {
                         } else {
                           rateFactor = AppConstants.ratesMap[currencyCode]!;
                         }
+
+                        _onControllerChanged();
                       });
                     },
                     currencyFilter: AppConstants.currencyList,

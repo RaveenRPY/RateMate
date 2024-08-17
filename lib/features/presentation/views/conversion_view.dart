@@ -1,15 +1,19 @@
+import 'dart:developer';
 import 'dart:ui';
 
+import 'package:country_currency_pickers/countries.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:lottie/lottie.dart';
+import 'package:ratemate/features/data/datasources/local_data_source.dart';
 import 'package:ratemate/features/presentation/bloc/rates/rates_bloc.dart';
-import 'package:ratemate/features/presentation/widgets/custom_dialog_box.dart';
 import 'package:ratemate/utils/app_styles.dart';
 import 'package:ratemate/utils/app_utils.dart';
 
+import '../../../utils/app_constants.dart';
 import '../widgets/currency_container.dart';
+import '../widgets/custom_dialog_box.dart';
 
 class ConversionView extends StatefulWidget {
   const ConversionView({super.key});
@@ -19,55 +23,14 @@ class ConversionView extends StatefulWidget {
 }
 
 class _ConversionViewState extends State<ConversionView> {
-  String currencyCode = 'LKR';
+  String? currencyCode;
   String? countryCode;
   double mainAmount = 0;
 
   bool _isProgressShow = false;
+  final LocalDataSource localDataSource = LocalDataSource();
 
   TextEditingController mainAmountController = TextEditingController();
-
-  List<CurrencyContainer> currencyContainers = [];
-
-  @override
-  void initState() {
-    super.initState();
-    countryCode = AppUtils.currency2CountryCode(currencyCode);
-    currencyContainers.add(
-      CurrencyContainer(
-        currencyCode: 'LKR',
-        onAmountChanged: (amount) {},
-        initialValue: mainAmountController.text, // Initialize delete callback
-      ),
-    );
-    mainAmountController.addListener(_updateCurrencyContainers);
-  }
-
-  @override
-  void dispose() {
-    mainAmountController.removeListener(_updateCurrencyContainers);
-    super.dispose();
-  }
-
-  void _updateCurrencyContainers() {
-    setState(() {
-      currencyContainers = currencyContainers.map((container) {
-        return CurrencyContainer(
-          currencyCode: container.currencyCode,
-          onAmountChanged: container.onAmountChanged,
-          initialValue: mainAmountController.text,// Pass delete callback
-        );
-      }).toList();
-    });
-  }
-
-  void _removeCurrencyContainer(int index) {
-    setState(() {
-      if (index >= 0 && index < currencyContainers.length) {
-        currencyContainers.removeAt(index);
-      }
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -104,11 +67,14 @@ class _ConversionViewState extends State<ConversionView> {
                     isBaseCurrency: true,
                     currencyCode: 'USD',
                     controller: mainAmountController,
+                    onCurrencyChanged: (currency) {
+                      setState(() {});
+                    },
                     onAmountChanged: (amount) {
                       setState(() {
-                        mainAmount = double.tryParse(amount) ?? 0;
-                        _updateCurrencyContainers();
+                        mainAmount = double.tryParse(amount) ?? 0.0;
                       });
+                      log("Main Amount: $mainAmount");
                     },
                   ),
                   const SizedBox(height: 40),
@@ -117,55 +83,72 @@ class _ConversionViewState extends State<ConversionView> {
                     style: AppStyling.thin14Grey(),
                   ),
                   const SizedBox(height: 15),
-                  Column(
-                    children: currencyContainers.asMap().entries.map((entry) {
-                      int index = entry.key;
-                      CurrencyContainer container = entry.value;
-                      return GestureDetector(
-                        onLongPress: () {
-                          CustomDialogBox.show(
-                            context,
-                            isTwoButton: true,
-                            message: 'Are you sure to delete?',
-                            negativeButtonText: 'No',
-                            positiveButtonText: 'Yes',
-                            negativeButtonTap: () {
-                              Navigator.pop(context);
+                  SizedBox(
+                    height: 450,
+                    child: ListView.builder(
+                      itemCount: AppConstants.converterList.length,
+                      itemBuilder: (context, index) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 15),
+                          child: GestureDetector(
+                            onLongPress: () {
+                              CustomDialogBox.show(
+                                context,
+                                isTwoButton: true,
+                                message: 'Are you sure to delete?',
+                                negativeButtonText: 'No',
+                                positiveButtonText: 'Yes',
+                                negativeButtonTap: () {
+                                  Navigator.pop(context);
+                                },
+                                positiveButtonTap: () {
+                                  setState(() {
+                                    AppConstants.converterList.removeAt(index);
+                                    localDataSource.setLocalConvertors(
+                                        AppConstants.converterList);
+                                  });
+                                  Navigator.pop(context);
+                                },
+                              );
                             },
-                            positiveButtonTap: () {
-                              _removeCurrencyContainer(index);
-                              Navigator.pop(context);
-                            },
-                          );
-                        },
-                        child: Column(
-                          children: [
-                            container,
-                            const SizedBox(height: 15),
-                          ],
-                        ),
-                      );
-                    }).toList(),
+                            child: CurrencyContainer(
+                              key: UniqueKey(),
+                              currencyCode: AppConstants.converterList[index],
+                              initialValue: mainAmountController.text,
+                              onCurrencyChanged: (currency) {
+                                setState(() {
+                                  AppConstants.converterList[index] = currency;
+                                  localDataSource.setLocalConvertors(
+                                      AppConstants.converterList);
+                                });
+                              },
+                              onAmountChanged: (amount) {
+                                setState(() {
+                                  mainAmount = double.tryParse(amount) ?? 0.0;
+                                });
+                                log("Updated Amount: $mainAmount");
+                              },
+                            ),
+                          ),
+                        );
+                      },
+                    ),
                   ),
-                  const SizedBox(height: 20),
+                  const SizedBox(height: 30),
                   Center(
                     child: ElevatedButton(
                       onPressed: () {
                         setState(() {
-                          currencyContainers.add(
-                            CurrencyContainer(
-                              currencyCode: 'LKR',
-                              onAmountChanged: (amount) {},
-                              initialValue: mainAmountController.text,
-                            ),
-                          );
+                          AppConstants.converterList.add('LKR');
+                          localDataSource
+                              .setLocalConvertors(AppConstants.converterList);
                         });
                       },
                       style: const ButtonStyle(
                           padding: WidgetStatePropertyAll(EdgeInsets.symmetric(
                               vertical: 10, horizontal: 20)),
                           surfaceTintColor:
-                          WidgetStatePropertyAll(Color(0xff69b336))),
+                              WidgetStatePropertyAll(Color(0xff69b336))),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

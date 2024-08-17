@@ -7,3 +7,5 @@ class RatesRequestEvent extends RatesEvent {
 
   RatesRequestEvent({this.baseCode});
 }
+
+class GetLocalConvertorsEvent extends RatesEvent {}

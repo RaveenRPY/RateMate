@@ -18,3 +18,9 @@ class GetRatesFailedState extends RatesState {
 
   GetRatesFailedState({this.result, this.errorType});
 }
+
+class GetLocalConvertersSuccessState extends RatesState {
+  final List<String>? local;
+
+  GetLocalConvertersSuccessState({this.local});
+}
